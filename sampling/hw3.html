@@ -1506,9 +1506,9 @@ div.tocify {
     return(c(low, up))
 }
 # input n and p to get C-P confidence interval
-n = c(10, 10, 100, 100, 100, 1000, 1000)
-p = c(0.5, 0.9, 0.5, 0.9, 0.99, 0.99, 0.999)
-for (i in 1:7){
+n &lt;- c(10, 10, 100, 100, 100, 1000, 1000)
+p &lt;- c(0.5, 0.9, 0.5, 0.9, 0.99, 0.99, 0.999)
+for (i in 1:7) {
     print(get_ci(n[i], p[i]))
 }</code></pre>
 <pre><code>## [1] 0.187086 0.812914
@@ -1539,9 +1539,9 @@ for (i in 1:11) {
 }
 print(mean(fr))</code></pre>
 <pre><code>## [1] 1.78</code></pre>
-<pre class="r"><code>se = sqrt((1-50/807)*var(fr)/49)
+<pre class="r"><code>se &lt;- sqrt((1 - 50 / 807) * var(fr) / 50)
 print(se)</code></pre>
-<pre><code>## [1] 0.3711453</code></pre>
+<pre><code>## [1] 0.3674151</code></pre>
 </div>
 <div id="c" class="section level3">
 <h3>c</h3>
@@ -1554,31 +1554,31 @@ print(se)</code></pre>
 <pre><code>## The following object is masked from &#39;package:base&#39;:
 ## 
 ##     print.default</code></pre>
-<pre class="r"><code>print(skewness(fr))  # skewness</code></pre>
+<pre class="r"><code>print(skewness(fr)) # skewness</code></pre>
 <pre><code>## [1] 1.592866</code></pre>
 </div>
 <div id="d" class="section level3">
 <h3>d</h3>
-<pre class="r"><code>p = 28/50
-se = sqrt((1-50/807)*p*(1-p)/49)
-ci = c(p-1.96*se, p+1.96*se)
+<pre class="r"><code>p &lt;- 28 / 50
+se &lt;- sqrt((1 - 50 / 807) * p * (1 - p) / 49)
+ci &lt;- c(p - 1.96 * se, p + 1.96 * se)
 print(ci)</code></pre>
 <pre><code>## [1] 0.4253862 0.6946138</code></pre>
 </div>
 </div>
 <div id="section-1" class="section level2">
 <h2>2.13.7</h2>
-<pre class="r"><code>p = 0.175
-se = sqrt(p*(1-p)/999)
-ci = c(p-1.96*se, p+1.96*se)
+<pre class="r"><code>p &lt;- 0.175
+se &lt;- sqrt(p * (1 - p) / 999)
+ci &lt;- c(p - 1.96 * se, p + 1.96 * se)
 print(ci)</code></pre>
 <pre><code>## [1] 0.1514376 0.1985624</code></pre>
 </div>
 <div id="section-2" class="section level2">
 <h2>2.13.14</h2>
-<pre class="r"><code>p = 23/30
-se = sqrt(p*(1-p)/29)
-ci = c(p-1.96*se, p+1.96*se)
+<pre class="r"><code>p &lt;- 23 / 30
+se &lt;- sqrt(p * (1 - p) / 29)
+ci &lt;- c(p - 1.96 * se, p + 1.96 * se)
 print(ci)</code></pre>
 <pre><code>## [1] 0.6127276 0.9206057</code></pre>
 </div>
@@ -1602,15 +1602,15 @@ print(skewness(ac)) # skewness</code></pre>
 </div>
 <div id="b-2" class="section level3">
 <h3>b</h3>
-<pre class="r"><code>p = mean(ac)
-se = sqrt(var(ac)/239)
-ci = c(p-1.96*se, p+1.96*se)
+<pre class="r"><code>p &lt;- mean(ac)
+se &lt;- sqrt(var(ac) / 240)
+ci &lt;- c(p - 1.96 * se, p + 1.96 * se)
 print(p)</code></pre>
 <pre><code>## [1] 12.07917</code></pre>
 <pre class="r"><code>print(se)</code></pre>
-<pre><code>## [1] 0.1245075</code></pre>
+<pre><code>## [1] 0.1242478</code></pre>
 <pre class="r"><code>print(ci)</code></pre>
-<pre><code>## [1] 11.83513 12.32320</code></pre>
+<pre><code>## [1] 11.83564 12.32269</code></pre>
 </div>
 </div>
 <div id="section-4" class="section level2">
@@ -1618,15 +1618,15 @@ print(p)</code></pre>
 <div id="c-1" class="section level3">
 <h3>c</h3>
 <pre class="r"><code>crimes &lt;- read.csv(&quot;crimes.csv&quot;)
-m = nrow(crimes[crimes$crimetype == &quot;burglary&quot;, ])
-n_pop = 7048107
-n_samp = 5000
+m &lt;- nrow(crimes[crimes$crimetype == &quot;burglary&quot;, ])
+n_pop &lt;- 7048107
+n_samp &lt;- 5000
 print(m)</code></pre>
 <pre><code>## [1] 295</code></pre>
 <pre class="r"><code>print(n_pop * m / n_samp)</code></pre>
 <pre><code>## [1] 415838.3</code></pre>
-<pre class="r"><code>se = n_pop * sqrt((1-n_samp/n_pop)*m/n_samp*(1-m/n_samp)/(n_samp-1))
-ci = c(n_pop * m / n_samp-1.96*se, n_pop * m / n_samp+1.96*se)
+<pre class="r"><code>se &lt;- n_pop * sqrt((1 - n_samp / n_pop) * m / n_samp * (1 - m / n_samp) / (n_samp - 1))
+ci &lt;- c(n_pop * m / n_samp - 1.96 * se, n_pop * m / n_samp + 1.96 * se)
 print(se)</code></pre>
 <pre><code>## [1] 23479.98</code></pre>
 <pre class="r"><code>print(ci)</code></pre>
@@ -1634,10 +1634,10 @@ print(se)</code></pre>
 </div>
 <div id="d-1" class="section level3">
 <h3>d</h3>
-<pre class="r"><code>p = nrow(crimes[crimes$domestic == 1, ]) / nrow(crimes)
+<pre class="r"><code>p &lt;- nrow(crimes[crimes$domestic == 1, ]) / nrow(crimes)
 print(p)</code></pre>
 <pre><code>## [1] 0.131</code></pre>
-<pre class="r"><code>cv = sqrt((1-n_samp/n_pop)*p*(1-p)/(n_samp-1))/p
+<pre class="r"><code>cv &lt;- sqrt((1 - n_samp / n_pop) * p * (1 - p) / (n_samp - 1)) / p
 print(cv)</code></pre>
 <pre><code>## [1] 0.03641485</code></pre>
 </div>
@@ -1652,12 +1652,12 @@ ball_s &lt;- baseball[sample(nrow(baseball), size = 150), ]
 logsal &lt;- log(ball_s$salary)
 print(mean(logsal))</code></pre>
 <pre><code>## [1] 13.77019</code></pre>
-<pre class="r"><code>n_pop = 797
-n_samp = 150
-se_m &lt;- sqrt((1 - n_samp / n_pop) * var(logsal) / (n_samp - 1))
-ci = c(mean(logsal) - 1.96 * se_m, mean(logsal) + 1.96 * se_m)
+<pre class="r"><code>n_pop &lt;- 797
+n_samp &lt;- 150
+se_m &lt;- sqrt((1 - n_samp / n_pop) * var(logsal) / (n_samp))
+ci &lt;- c(mean(logsal) - 1.96 * se_m, mean(logsal) + 1.96 * se_m)
 print(ci)</code></pre>
-<pre><code>## [1] 13.58896 13.95142</code></pre>
+<pre><code>## [1] 13.58957 13.95082</code></pre>
 </div>
 <div id="d-2" class="section level3">
 <h3>d</h3>
@@ -1665,13 +1665,13 @@ print(ci)</code></pre>
 print(nrow(ball_s[ball_s$pos == &quot;P&quot;, ]))</code></pre>
 <pre><code>## [1] 66</code></pre>
 <pre class="r"><code>se_pit &lt;- sqrt((1 - n_samp / n_pop) * (p_pitcher * (1 - p_pitcher)) / n_samp)
-ci = c(p_pitcher-1.96 * se_pit, p_pitcher+1.96 * se_pit)
+ci &lt;- c(p_pitcher - 1.96 * se_pit, p_pitcher + 1.96 * se_pit)
 print(ci)</code></pre>
 <pre><code>## [1] 0.3684262 0.5115738</code></pre>
 </div>
 <div id="e" class="section level3">
 <h3>e</h3>
-<pre class="r"><code>y_u = mean(log(baseball$salary))
+<pre class="r"><code>y_u &lt;- mean(log(baseball$salary))
 print(y_u)</code></pre>
 <pre><code>## [1] 13.92706</code></pre>
 <pre class="r"><code>print((nrow(baseball[baseball$pos == &quot;P&quot;, ])) / 797)</code></pre>
@@ -1727,46 +1727,46 @@ dev.off()</code></pre>
 <pre><code>## [1] 0.008626505</code></pre>
 <pre class="r"><code>print(mean(ml_v))</code></pre>
 <pre><code>## [1] 1.534711</code></pre>
-<pre class="r"><code>print(var(m_s) * 150 / 149 / 150 * (1 - 150 / 797))</code></pre>
-<pre><code>## [1] 386854939</code></pre>
-<pre class="r"><code>print(var(ml_s) * 150 / 149 / 150 * (1 - 150 / 797))</code></pre>
-<pre><code>## [1] 4.699964e-05</code></pre>
-<pre class="r"><code>print((mean(m_s)-mean(baseball$salary))/mean(baseball$salary))</code></pre>
+<pre class="r"><code>print(var(m_s) /150 * (1 - 150 / 797))</code></pre>
+<pre><code>## [1] 384275906</code></pre>
+<pre class="r"><code>print(var(ml_s) /150 * (1 - 150 / 797))</code></pre>
+<pre><code>## [1] 4.668631e-05</code></pre>
+<pre class="r"><code>print((mean(m_s) - mean(baseball$salary)) / mean(baseball$salary))</code></pre>
 <pre><code>## [1] 0.0002266726</code></pre>
-<pre class="r"><code>print((mean(ml_s)-mean(log(baseball$salary)))/mean(log(baseball$salary)))</code></pre>
+<pre class="r"><code>print((mean(ml_s) - mean(log(baseball$salary))) / mean(log(baseball$salary)))</code></pre>
 <pre><code>## [1] 1.420387e-05</code></pre>
-<pre class="r"><code>S2_s &lt;- var(baseball$salary) * 797 / 796
-S2l_s &lt;- var(log(baseball$salary)) * 797 / 796
-print(((1 - 150 / 797) / 150 * S2_s - var(m_s))/((1 - 150 / 797) / 150 * S2_s))</code></pre>
-<pre><code>## [1] -0.04805101</code></pre>
-<pre class="r"><code>print(((1 - 150 / 797) / 150 * S2l_s - var(ml_s))/((1 - 150 / 797) / 150 * S2l_s))</code></pre>
-<pre><code>## [1] -0.03750053</code></pre>
+<pre class="r"><code>S2_s &lt;- var(baseball$salary)
+S2l_s &lt;- var(log(baseball$salary))
+print(((1 - 150 / 797) / 150 * S2_s - var(m_s)) / ((1 - 150 / 797) / 150 * S2_s))</code></pre>
+<pre><code>## [1] -0.04936765</code></pre>
+<pre class="r"><code>print(((1 - 150 / 797) / 150 * S2l_s - var(ml_s)) / ((1 - 150 / 797) / 150 * S2l_s))</code></pre>
+<pre><code>## [1] -0.03880392</code></pre>
 <pre class="r"><code>print(var(baseball$salary))</code></pre>
 <pre><code>## [1] 1.250277e+13</code></pre>
 <pre class="r"><code>print(var(log(baseball$salary)))</code></pre>
 <pre><code>## [1] 1.534428</code></pre>
-<pre class="r"><code>print((var(baseball$salary) - mean(m_v))/var(baseball$salary))</code></pre>
+<pre class="r"><code>print((var(baseball$salary) - mean(m_v)) / var(baseball$salary))</code></pre>
 <pre><code>## [1] 0.0002572542</code></pre>
-<pre class="r"><code>print((var(log(baseball$salary)) - mean(ml_v))/var(log(baseball$salary)))</code></pre>
+<pre class="r"><code>print((var(log(baseball$salary)) - mean(ml_v)) / var(log(baseball$salary)))</code></pre>
 <pre><code>## [1] -0.0001839955</code></pre>
 </div>
 <div id="supplement-question-4" class="section level3">
 <h3>supplement question 4</h3>
-<pre class="r"><code>lower_s &lt;- m_s - 1.96 * sqrt((1 - 150 / 797) * m_v / 149)
-lowerl_s &lt;- ml_s - 1.96 * sqrt((1 - 150 / 797) * ml_v / 149)
-upper_s &lt;- m_s + 1.96 * sqrt((1 - 150 / 797) * m_v / 149)
-upperl_s &lt;- ml_s + 1.96 * sqrt((1 - 150 / 797) * ml_v / 149)
-t_s = sum(lower_s &gt; mean(baseball$salary)) + sum(upper_s &lt; mean(baseball$salary))
-p_s = 1-t_s / 1000
-print(p_s) </code></pre>
-<pre><code>## [1] 0.943</code></pre>
-<pre class="r"><code>print((p_s-0.95)/0.95)</code></pre>
-<pre><code>## [1] -0.007368421</code></pre>
-<pre class="r"><code>tl_s = sum(lowerl_s &gt; mean(log(baseball$salary))) + sum(upperl_s &lt; mean(log(baseball$salary)))
-pl_s = 1-tl_s / 1000
-print(pl_s) </code></pre>
+<pre class="r"><code>lower_s &lt;- m_s - 1.96 * sqrt((1 - 150 / 797) * m_v / 150)
+lowerl_s &lt;- ml_s - 1.96 * sqrt((1 - 150 / 797) * ml_v / 150)
+upper_s &lt;- m_s + 1.96 * sqrt((1 - 150 / 797) * m_v / 150)
+upperl_s &lt;- ml_s + 1.96 * sqrt((1 - 150 / 797) * ml_v / 150)
+t_s &lt;- sum(lower_s &gt; mean(baseball$salary)) + sum(upper_s &lt; mean(baseball$salary))
+p_s &lt;- 1 - t_s / 1000
+print(p_s)</code></pre>
+<pre><code>## [1] 0.942</code></pre>
+<pre class="r"><code>print((p_s - 0.95) / 0.95)</code></pre>
+<pre><code>## [1] -0.008421053</code></pre>
+<pre class="r"><code>tl_s &lt;- sum(lowerl_s &gt; mean(log(baseball$salary))) + sum(upperl_s &lt; mean(log(baseball$salary)))
+pl_s &lt;- 1 - tl_s / 1000
+print(pl_s)</code></pre>
 <pre><code>## [1] 0.95</code></pre>
-<pre class="r"><code>print((pl_s-0.95)/0.95)</code></pre>
+<pre class="r"><code>print((pl_s - 0.95) / 0.95)</code></pre>
 <pre><code>## [1] 0</code></pre>
 </div>
 </div>
