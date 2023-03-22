@@ -12,7 +12,7 @@
 <meta name="author" content="蒋翌坤" />
 
 
-<title>非参数统计 Homework 4</title>
+<title>非参数统计 Homework 5</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -1484,310 +1484,101 @@ border-radius: 0px;
 
 
 
-<h1 class="title toc-ignore">非参数统计 Homework 4</h1>
+<h1 class="title toc-ignore">非参数统计 Homework 5</h1>
 <h4 class="author">蒋翌坤</h4>
-<h4 class="date">2023.3.16</h4>
+<h4 class="date">2023.3.22</h4>
 
 </div>
 
 
-<div id="problem-1" class="section level2">
-<h2>Problem 1</h2>
-<div id="rewrite-tests" class="section level3">
-<h3>rewrite tests</h3>
-<pre class="r"><code>#&#39; rewrite Mood test
-#&#39; return True if null hypothesis is not rejected, else return False
-mood_test &lt;- function(x, y, a) {
-    xy &lt;- c(x, y)
-    N &lt;- length(x) + length(y)
-    xy_sorted &lt;- sort(xy)
-    z &lt;- rep(0, times = N)
-    z[match(x, xy_sorted)] &lt;- 1
-    m_n &lt;- 0
-    for (i in 1:N) {
-        m_n &lt;- m_n + (i - (N + 1) / 2)^2 * z[i]
+<div id="write-kendall-and-spearmans-test" class="section level2">
+<h2>Write Kendall and Spearman’s test</h2>
+<pre class="r"><code>#&#39; rank function
+rank = function(x){
+    n = length(x)
+    rank = c()
+    for (i in 1:n){
+        rank = c(rank, sum(x &lt;= x[i]))
     }
-    e_m_n &lt;- length(x) * (N^2 - 1) / 12
-    var_m_n &lt;- length(x) * length(y) * (N + 1) * (N^2 - 4) / 180
-    z_value &lt;- (m_n - e_m_n) / sqrt(var_m_n)
-    z_a &lt;- qnorm(1 - a / 2)
-    return(abs(z_value) &lt;= z_a)
-}
-
-#&#39; rewrite Sukhatme test
-#&#39; return True if null hypothesis is not rejected, else return False
-sukhatme_test &lt;- function(x, y, a) {
-    t &lt;- 0
-    for (i in x) {
-        for (j in y) {
-            if ((i &gt; j &amp;&amp; i &lt; 0) || (i &lt; j &amp;&amp; i &gt; 0)) {
-                t &lt;- t + 1
-            }
+    return(rank)
+}</code></pre>
+<pre class="r"><code>#&#39; Kendall&#39;s test
+#&#39; @return TRUE if the null hypothesis is not rejected
+kendall &lt;- function(x, y, a) {
+    n &lt;- length(x)
+    u_ij &lt;- c()
+    v_ij &lt;- c()
+    for (i in 1:n) {
+        for (j in 1:n) {
+            u_ij &lt;- c(u_ij, sign(x[j] - x[i]))
+            v_ij &lt;- c(v_ij, sign(y[j] - y[i]))
         }
     }
-    e_t &lt;- length(x) * length(y) / 4
-    var_t &lt;- (length(x) * length(y) * (length(x) + length(y) + 7)) / 48
-    z_value &lt;- (t - e_t) / sqrt(var_t)
+    t &lt;- sum(u_ij * v_ij) / (n * (n - 1))
+    z &lt;- t * 3 * sqrt(n * (n - 1) / (2 * (2 * n + 5)))
     z_a &lt;- qnorm(1 - a / 2)
-    return(abs(z_value) &lt;= z_a)
+    return(abs(z) &lt;= z_a)
+}</code></pre>
+<pre class="r"><code>#&#39; Spearman&#39;s test
+#&#39; @return TRUE if the null hypothesis is not rejected
+spearman &lt;- function(x, y, a) {
+    n &lt;- length(x)
+    x_rank &lt;- rank(x)
+    y_rank &lt;- rank(y)
+    d &lt;- x_rank - y_rank
+    r &lt;- 1 - 6 * sum(d^2) / (n * (n^2 - 1))
+    t &lt;- r * sqrt((n - 2) / (1 - r^2))
+    t_a &lt;- qt(1 - a / 2, n - 2)
+    return(abs(t) &lt;= t_a)
 }</code></pre>
 </div>
-<div id="section" class="section level3">
-<h3>1.1</h3>
-<pre class="r"><code># 1.1
-sim_num &lt;- 10000
-n &lt;- 100
-a &lt;- 0.05
-x_mean &lt;- 0
-y_mean &lt;- 0
-var_x &lt;- 1
-var_y &lt;- 1.2
-mood &lt;- c()
-suk &lt;- c()
-for (i in 1:sim_num) {
-    set.seed(i)
-    x &lt;- rnorm(n, mean = x_mean, sd = sqrt(var_x))
-    y &lt;- rnorm(n, mean = y_mean, sd = sqrt(var_y))
-    mood &lt;- c(mood, mood_test(x, y, a))
-    suk &lt;- c(suk, sukhatme_test(x, y, a))
+<div id="problem-2" class="section level2">
+<h2>Problem 2</h2>
+<pre class="r"><code>simulate_once &lt;- function(seed) {
+    set.seed(seed)
+    n_pair &lt;- 50
+    x &lt;- runif(n_pair, min = -1, max = 1)
+    y &lt;- rnorm(n_pair, mean = sqrt(1 - x^2), sd = 1)
+    a &lt;- 0.05
+    return(c(kendall(x, y, a), spearman(x, y, a)))
 }
-
-print(sum(mood)) # 8805</code></pre>
-<pre><code>## [1] 8805</code></pre>
-<pre class="r"><code>print(sum(suk)) # 8952</code></pre>
-<pre><code>## [1] 8952</code></pre>
-</div>
-<div id="section-1" class="section level3">
-<h3>1.2</h3>
-<pre class="r"><code># 1.2
-n &lt;- seq(from = 50, to = 200, by = 5)
-sim_num &lt;- 1000
-mood_n &lt;- c()
-suk_n &lt;- c()
-for (i in n) {
-    mood &lt;- c()
-    suk &lt;- c()
-    for (j in 1:sim_num) {
-        set.seed(i * j)
-        x &lt;- rnorm(i, 0, 1)
-        y &lt;- rnorm(i, 0, 1.5)
-        mood &lt;- c(mood, mood_test(x, y, a))
-        suk &lt;- c(suk, sukhatme_test(x, y, a))
-    }
-    mood_n &lt;- c(mood_n, sum(mood) / sim_num)
-    suk_n &lt;- c(suk_n, sum(suk) / sim_num)
+n_simulate &lt;- 1000
+kendall_result &lt;- c()
+spearman_result &lt;- c()
+for (i in 1:n_simulate) {
+    result &lt;- simulate_once(seed = i)
+    kendall_result &lt;- c(kendall_result, result[1])
+    spearman_result &lt;- c(spearman_result, result[2])
 }
-png(&quot;hw4-1.2.png&quot;, width = 800, height = 600)
-plot(n, mood_n,
-    type = &quot;b&quot;, pch = 19, xlab = &quot;n&quot;, ylab = &quot;p-value&quot;,
-    col = &quot;blue&quot;, ylim = c(0, 0.6),
-    main = &quot;Relationship between n and p-value&quot;,
-    lty = 1, lwd = 3, cex = 1.5
-)
-par(new = TRUE)
-plot(n, suk_n,
-    type = &quot;b&quot;, pch = 19, col = &quot;green&quot;, xlab = &quot;&quot;, ylab = &quot;&quot;,
-    ylim = c(0, 0.6),
-    lty = 1, lwd = 3, cex = 1.5
-)
-legend(150, 0.2,
-    legend = c(&quot;Mood&quot;, &quot;Sukhatme&quot;),
-    col = c(&quot;blue&quot;, &quot;green&quot;), lty = c(1, 1), cex = 1.5
-)
-dev.off()</code></pre>
-<pre><code>## png 
-##   2</code></pre>
-</div>
-<div id="section-2" class="section level3">
-<h3>1.3</h3>
-<pre class="r"><code># 1.3
-n &lt;- seq(from = 50, to = 200, by = 5)
-sim_num &lt;- 1000
-mood_n &lt;- c()
-suk_n &lt;- c()
-for (i in n) {
-    mood &lt;- c()
-    suk &lt;- c()
-    for (j in 1:sim_num) {
-        set.seed(i * j)
-        x &lt;- rcauchy(i, 0, 1)
-        y &lt;- rcauchy(i, 0, 1.8)
-        mood &lt;- c(mood, mood_test(x, y, a))
-        suk &lt;- c(suk, sukhatme_test(x, y, a))
-    }
-    mood_n &lt;- c(mood_n, sum(mood) / sim_num)
-    suk_n &lt;- c(suk_n, sum(suk) / sim_num)
-}
-png(&quot;hw4-1.3.png&quot;, width = 800, height = 600)
-plot(n, mood_n,
-    type = &quot;b&quot;, pch = 19, xlab = &quot;n&quot;, ylab = &quot;p-value&quot;,
-    col = &quot;blue&quot;, ylim = c(0, 0.6),
-    main = &quot;Relationship between n and p-value&quot;,
-    lty = 1, lwd = 3, cex = 1.5
-)
-par(new = TRUE)
-plot(n, suk_n,
-    type = &quot;b&quot;, pch = 19, col = &quot;green&quot;, xlab = &quot;&quot;, ylab = &quot;&quot;, ylim = c(0, 0.6),
-    lty = 1, lwd = 3, cex = 1.5
-)
-legend(150, 0.2, legend = c(&quot;Mood&quot;, &quot;Sukhatme&quot;),
-    col = c(&quot;blue&quot;, &quot;green&quot;), lty = c(1, 1), cex = 1.5)
-dev.off()</code></pre>
-<pre><code>## png 
-##   2</code></pre>
-</div>
+print(paste(&quot;Kendall&#39;s test: &quot;, sum(kendall_result) / n_simulate))</code></pre>
+<pre><code>## [1] &quot;Kendall&#39;s test:  0.938&quot;</code></pre>
+<pre class="r"><code>print(paste(&quot;Spearman&#39;s test: &quot;, sum(spearman_result) / n_simulate))</code></pre>
+<pre><code>## [1] &quot;Spearman&#39;s test:  0.936&quot;</code></pre>
+<pre class="r"><code># &quot;Kendall&#39;s test:  0.938&quot;, &quot;Spearman&#39;s test:  0.936&quot;</code></pre>
 </div>
 <div id="problem-3" class="section level2">
 <h2>Problem 3</h2>
-<div id="rewrite-tests-1" class="section level3">
-<h3>rewrite tests</h3>
-<pre class="r"><code>#&#39; rewrite Wilcoxon Rank-sum test
-#&#39; return True if null hypothesis is not rejected, else return False
-wilcox_ranksum_test &lt;- function(x, y, a) {
-    xy &lt;- c(x, y)
-    N &lt;- length(x) + length(y)
-    xy_sorted &lt;- sort(xy)
-    z &lt;- rep(0, times = N)
-    z[match(x, xy_sorted)] &lt;- 1
-    w_n &lt;- 0
-    for (i in 1:N) {
-        w_n &lt;- w_n + i * z[i]
-    }
-    e_w_n &lt;- length(x) * (N + 1) / 2
-    var_w_n &lt;- length(x) * length(y) * (N + 1) / 12
-    z_value &lt;- (w_n - e_w_n) / sqrt(var_w_n)
-    z_a &lt;- qnorm(1 - a / 2)
-    return(abs(z_value) &lt;= z_a)
+<pre class="r"><code>simulate_once &lt;- function(seed) {
+    set.seed(seed)
+    n_pair &lt;- 10
+    x &lt;- runif(n_pair, min = 1, max = 2)
+    y &lt;- rnorm(n_pair, mean = x / 2, sd = 1)
+    a &lt;- 0.05
+    return(c(kendall(x, y, a), spearman(x, y, a)))
 }
-#&#39; rewrite Terry-Hoeffding test
-#&#39; return True if null hypothesis is not rejected, else return False
-terry_hoeffding_test &lt;- function(x, y, a) {
-    xy &lt;- c(x, y)
-    N &lt;- length(x) + length(y)
-    xy_sorted &lt;- sort(xy)
-    z &lt;- rep(0, times = N)
-    z[match(x, xy_sorted)] &lt;- 1
-    c1 &lt;- 0
-    e_i_all &lt;- c()
-    for (i in 1:N) {
-        e_i &lt;- qnorm(i / (N + 1))
-        e_i_all &lt;- c(e_i_all, e_i)
-        c1 &lt;- c1 + e_i * z[i]
-    }
-    e_c1 &lt;- 0
-    var_c1 &lt;- length(x) * length(y) * sum((e_i_all)^2) / ((N + 1) * N)
-    z_value &lt;- (c1 - e_c1) / sqrt(var_c1)
-    z_a &lt;- qnorm(1 - a / 2)
-    return(abs(z_value) &lt;= z_a)
-}</code></pre>
-</div>
-<div id="section-3" class="section level3">
-<h3>3.1</h3>
-<pre class="r"><code># 3.1
-sim_num &lt;- 10000
-n &lt;- 100
-a &lt;- 0.05
-x_mean &lt;- 0
-y_mean &lt;- 0.1
-var_x &lt;- 1
-var_y &lt;- 1
-wilcox &lt;- c()
-terry &lt;- c()
-for (i in 1:sim_num) {
-    set.seed(i)
-    x &lt;- rnorm(n, mean = x_mean, sd = sqrt(var_x))
-    y &lt;- rnorm(n, mean = y_mean, sd = sqrt(var_y))
-    wilcox &lt;- c(wilcox, wilcox_ranksum_test(x, y, a))
-    terry &lt;- c(terry, terry_hoeffding_test(x, y, a))
+n_simulate &lt;- 1000
+kendall_result &lt;- c()
+spearman_result &lt;- c()
+for (i in 1:n_simulate) {
+    result &lt;- simulate_once(seed = i)
+    kendall_result &lt;- c(kendall_result, result[1])
+    spearman_result &lt;- c(spearman_result, result[2])
 }
-
-print(sum(wilcox)) # 8942</code></pre>
-<pre><code>## [1] 8942</code></pre>
-<pre class="r"><code>print(sum(terry)) # 8931</code></pre>
-<pre><code>## [1] 8931</code></pre>
-</div>
-<div id="section-4" class="section level3">
-<h3>3.2</h3>
-<pre class="r"><code># 3.2
-n &lt;- seq(from = 50, to = 200, by = 5)
-sim_num &lt;- 1000
-wilcox_n &lt;- c()
-terry_n &lt;- c()
-for (i in n) {
-    wilcox &lt;- c()
-    terry &lt;- c()
-    for (j in 1:sim_num) {
-        set.seed(i * j)
-        x &lt;- rcauchy(i, 0, 1)
-        y &lt;- rcauchy(i, 0.8, 1)
-        wilcox &lt;- c(wilcox, wilcox_ranksum_test(x, y, a))
-        terry &lt;- c(terry, terry_hoeffding_test(x, y, a))
-    }
-    wilcox_n &lt;- c(wilcox_n, sum(wilcox) / sim_num)
-    terry_n &lt;- c(terry_n, sum(terry) / sim_num)
-}
-png(&quot;hw4-3.2.png&quot;, width = 800, height = 600)
-plot(n, wilcox_n,
-    type = &quot;b&quot;, pch = 19, xlab = &quot;n&quot;, ylab = &quot;p-value&quot;,
-    col = &quot;blue&quot;, ylim = c(0, 0.6),
-    main = &quot;Relationship between n and p-value&quot;,
-    lty = 1, lwd = 3, cex = 1.5
-)
-par(new = TRUE)
-plot(n, terry_n,
-    type = &quot;b&quot;, pch = 19, col = &quot;green&quot;, xlab = &quot;&quot;, ylab = &quot;&quot;,
-    ylim = c(0, 0.6),
-    lty = 1, lwd = 3, cex = 1.5
-)
-legend(150, 0.4,
-    legend = c(&quot;Wilcoxon Rank sum&quot;, &quot;Terry-Hoeffding&quot;),
-    col = c(&quot;blue&quot;, &quot;green&quot;), lty = c(1, 1), cex = 1.5
-)
-dev.off()</code></pre>
-<pre><code>## png 
-##   2</code></pre>
-</div>
-<div id="section-5" class="section level3">
-<h3>3.3</h3>
-<pre class="r"><code># 3.3
-n &lt;- seq(from = 50, to = 200, by = 5)
-sim_num &lt;- 1000
-wilcox_n &lt;- c()
-terry_n &lt;- c()
-for (i in n) {
-    wilcox &lt;- c()
-    terry &lt;- c()
-    for (j in 1:sim_num) {
-        set.seed(i * j)
-        x &lt;- rnorm(i, 0, 1)
-        y &lt;- rnorm(i, 0.4, 1)
-        wilcox &lt;- c(wilcox, wilcox_ranksum_test(x, y, a))
-        terry &lt;- c(terry, terry_hoeffding_test(x, y, a))
-    }
-    wilcox_n &lt;- c(wilcox_n, sum(wilcox) / sim_num)
-    terry_n &lt;- c(terry_n, sum(terry) / sim_num)
-}
-png(&quot;hw4-3.3.png&quot;, width = 800, height = 600)
-plot(n, wilcox_n,
-    type = &quot;b&quot;, pch = 19, xlab = &quot;n&quot;, ylab = &quot;p-value&quot;,
-    col = &quot;blue&quot;, ylim = c(0, 0.6),
-    main = &quot;Relationship between n and p-value&quot;,
-    lty = 1, lwd = 3, cex = 1.5
-)
-par(new = TRUE)
-plot(n, terry_n,
-    type = &quot;b&quot;, pch = 19, col = &quot;green&quot;, xlab = &quot;&quot;, ylab = &quot;&quot;,
-    ylim = c(0, 0.6),
-    lty = 1, lwd = 3, cex = 1.5
-)
-legend(150, 0.2,
-    legend = c(&quot;Wilcoxon Rank sum&quot;, &quot;Terry-Hoeffding&quot;),
-    col = c(&quot;blue&quot;, &quot;green&quot;), lty = c(1, 1), cex = 1.5
-)
-dev.off()</code></pre>
-<pre><code>## png 
-##   2</code></pre>
-</div>
+print(paste(&quot;Kendall&#39;s test: &quot;, sum(kendall_result) / n_simulate))</code></pre>
+<pre><code>## [1] &quot;Kendall&#39;s test:  0.942&quot;</code></pre>
+<pre class="r"><code>print(paste(&quot;Spearman&#39;s test: &quot;, sum(spearman_result) / n_simulate))</code></pre>
+<pre><code>## [1] &quot;Spearman&#39;s test:  0.939&quot;</code></pre>
+<pre class="r"><code># &quot;Kendall&#39;s test:  0.942&quot;, &quot;Spearman&#39;s test:  0.939&quot;</code></pre>
 </div>
 
 
