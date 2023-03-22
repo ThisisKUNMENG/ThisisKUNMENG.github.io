@@ -1491,7 +1491,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">抽样调查第四周作业</h1>
 <h4 class="author">蒋翌坤</h4>
-<h4 class="date">2023.3.20</h4>
+<h4 class="date">2023.3.22</h4>
 
 </div>
 
@@ -1592,9 +1592,9 @@ for (i in 1:1000) {
     bootstrap_sample_sd &lt;- c(bootstrap_sample_sd, sqrt(var(bootstrap_sample_i)))
     bootstrap_sample_median &lt;- c(bootstrap_sample_median, median(bootstrap_sample_i))
 }
-print(quantile(bootstrap_sample_mean, prob = c(0.25, 0.75)))</code></pre>
-<pre><code>##      25%      75% 
-## 283463.2 309038.9</code></pre>
+print(quantile(bootstrap_sample_mean, prob = c(0.025, 0.975)))</code></pre>
+<pre><code>##     2.5%    97.5% 
+## 263625.2 336648.5</code></pre>
 <pre class="r"><code>m_agcres92 &lt;- mean(agsrs$acres92)
 se_agcres92 &lt;- sqrt(var(agsrs$acres92) / n)
 print(m_agcres92)</code></pre>
@@ -1603,12 +1603,12 @@ print(m_agcres92)</code></pre>
 <pre><code>## [1] 19892.71</code></pre>
 <pre class="r"><code>print(c(m_agcres92 - 1.96 * se_agcres92, m_agcres92 + 1.96 * se_agcres92))</code></pre>
 <pre><code>## [1] 258907.3 336886.8</code></pre>
-<pre class="r"><code>print(quantile(bootstrap_sample_sd, prob = c(0.25, 0.75)))</code></pre>
-<pre><code>##      25%      75% 
-## 317262.5 358542.7</code></pre>
-<pre class="r"><code>print(quantile(bootstrap_sample_median, prob = c(0.25, 0.75)))</code></pre>
-<pre><code>##    25%    75% 
-## 189467 205954</code></pre>
+<pre class="r"><code>print(quantile(bootstrap_sample_sd, prob = c(0.025, 0.975)))</code></pre>
+<pre><code>##     2.5%    97.5% 
+## 281069.6 398878.2</code></pre>
+<pre class="r"><code>print(quantile(bootstrap_sample_median, prob = c(0.025, 0.975)))</code></pre>
+<pre><code>##   2.5%  97.5% 
+## 168051 223764</code></pre>
 </div>
 </div>
 
