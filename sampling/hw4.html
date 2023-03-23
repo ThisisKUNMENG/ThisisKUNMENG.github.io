@@ -1491,7 +1491,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">抽样调查第四周作业</h1>
 <h4 class="author">蒋翌坤</h4>
-<h4 class="date">2023.3.22</h4>
+<h4 class="date">2023.3.23</h4>
 
 </div>
 
@@ -1542,10 +1542,12 @@ m_inctot &lt;- mean(srs2$inctot)
 var_inctot &lt;- var(srs2$inctot)
 print(m_inctot)</code></pre>
 <pre><code>## [1] 8846.802</code></pre>
+<pre class="r"><code>print(m_inctot * nrow(ipums))</code></pre>
+<pre><code>## [1] 472958899</code></pre>
 <pre class="r"><code>se &lt;- sqrt((1 - n / nrow(ipums)) * var_inctot / n)
-ci &lt;- c(m_inctot - 1.96 * se, m_inctot + 1.96 * se)
+ci &lt;- c(m_inctot * nrow(ipums) - 1.96 * se * nrow(ipums), m_inctot * nrow(ipums) + 1.96 * se * nrow(ipums)) 
 print(ci)</code></pre>
-<pre><code>## [1] 8070.167 9623.437</code></pre>
+<pre><code>## [1] 431439207 514478591</code></pre>
 </div>
 <div id="supplement-question-1" class="section level3">
 <h3>supplement question</h3>
