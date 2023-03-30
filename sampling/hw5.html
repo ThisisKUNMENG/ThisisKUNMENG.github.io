@@ -1522,7 +1522,8 @@ srs_mean &lt;- apply(srs_score, 2, mean)
 print(paste(&quot;SRS&#39;s mean:&quot;))</code></pre>
 <pre><code>## [1] &quot;SRS&#39;s mean:&quot;</code></pre>
 <pre class="r"><code>print(srs_mean)</code></pre>
-<pre><code>##  [1] 69.50 69.25 66.50 72.50 69.75 69.50 75.25 72.50 72.25 75.50 73.50 70.75 70.50 73.75 76.50</code></pre>
+<pre><code>##  [1] 69.50 69.25 66.50 72.50 69.75 69.50 75.25 72.50 72.25 75.50 73.50 70.75
+## [13] 70.50 73.75 76.50</code></pre>
 <pre class="r"><code># calculate the variance of the SRS&#39;s mean
 print(paste(&quot;variance of SRS&#39;s mean:&quot;, var(score) / n * (1 - n / 6)))</code></pre>
 <pre><code>## [1] &quot;variance of SRS&#39;s mean: 7.18055555555556&quot;</code></pre>
@@ -1624,7 +1625,7 @@ get_se &lt;- function(n, s2, n_pop = 0) {
     if (n_pop == 0) {
         return(sqrt(s2 / n))
     } else {
-        return(sqrt((1 + n / n_pop) * (s2 / n)))
+        return(sqrt((1 - n / n_pop) * (s2 / n)))
     }
 }
 nrp &lt;- 0:8
@@ -1642,11 +1643,15 @@ for (i in subject) {
 subject_mean &lt;- subject_total / subject_sample_size
 subject_pop &lt;- c(102, 310, 217, 178)
 subject_se &lt;- c()
+subject_var = c()
 for (i in subject) {
     temp &lt;- c()
-    for (j in 1:9) {
-        temp &lt;- c(temp, rep(data[j, j + 1], data[j, 1]))
+    for (j in 0:8) {
+        temp &lt;- c(temp, rep(j, data[j + 1, i]))
     }
+    print(temp)
+    subject_var = c(subject_var, var(temp))
+    print(var(temp))
     subject_se &lt;- c(
         subject_se,
         get_se(
@@ -1655,8 +1660,16 @@ for (i in subject) {
             n_pop = sum(subject_pop)
         )
     )
-}
-print(paste(&quot;mean of each subject:&quot;))</code></pre>
+}</code></pre>
+<pre><code>## [1] 0 1 1 3 5 5 7
+## [1] 6.809524
+##  [1] 0 0 0 0 0 0 0 0 0 0 1 1 3 4 4 5 6 8 8
+## [1] 8.210526
+##  [1] 0 0 0 0 0 0 0 0 0 2 4 4 6
+## [1] 4.358974
+##  [1] 0 0 0 0 0 0 0 0 1 1 3
+## [1] 0.8727273</code></pre>
+<pre class="r"><code>print(paste(&quot;mean of each subject:&quot;))</code></pre>
 <pre><code>## [1] &quot;mean of each subject:&quot;</code></pre>
 <pre class="r"><code>print(subject_mean)</code></pre>
 <pre><code>##        bio   physical     social humanities 
@@ -1666,12 +1679,17 @@ print(paste(&quot;mean of each subject:&quot;))</code></pre>
 <pre class="r"><code>print(paste(&quot;standard error of each subject:&quot;))</code></pre>
 <pre><code>## [1] &quot;standard error of each subject:&quot;</code></pre>
 <pre class="r"><code>print(subject_se)</code></pre>
-<pre><code>## [1] 0.15497113 0.09475472 0.11413605 0.12392757</code></pre>
+<pre><code>## [1] 0.9820138 0.6495836 0.5743729 0.2797452</code></pre>
 <pre class="r"><code>print(paste(
     &quot;estimated total nrp standard error:&quot;,
     sqrt(sum(subject_pop^2 * subject_se^2))
 ))</code></pre>
-<pre><code>## [1] &quot;estimated total nrp standard error: 47.0396326114427&quot;</code></pre>
+<pre><code>## [1] &quot;estimated total nrp standard error: 261.911666550702&quot;</code></pre>
+<pre class="r"><code>W = subject_pop / 807
+print(sum(subject_pop^2 * (1-subject_sample_size/ W / 807)*subject_var/subject_sample_size))</code></pre>
+<pre><code>## [1] 65610.78</code></pre>
+<pre class="r"><code>print(sum(subject_pop^2 * (1-subject_sample_size/ subject_pop)*subject_var/subject_sample_size))</code></pre>
+<pre><code>## [1] 65610.78</code></pre>
 </div>
 <div id="b-1" class="section level3">
 <h3>b</h3>
@@ -1748,6 +1766,10 @@ print(paste(&quot;sampling weight for each stratum:&quot;))</code></pre>
     (health_journal$ConfInt + health_journal$HypTest) == 2
 health_journal$ci_hyp_neither &lt;-
     (health_journal$ConfInt + health_journal$HypTest) == 0
+health_journal$ci_only &lt;-
+    (health_journal$ConfInt == 1) + (health_journal$HypTest == 0) == 2
+health_journal$hyp_only &lt;-
+    (health_journal$ConfInt == 0) + (health_journal$HypTest == 1) == 2
 health_journal$sel_assn_both &lt;-
     (health_journal$RandomSel + health_journal$RandomAssn) == 2
 health_journal$sel_assn_neither &lt;-
@@ -1756,9 +1778,9 @@ ajph &lt;- health_journal[health_journal$Journal == &quot;AJPH&quot;, ]
 ajpm &lt;- health_journal[health_journal$Journal == &quot;AJPM&quot;, ]
 pm &lt;- health_journal[health_journal$Journal == &quot;PM&quot;, ]
 
-ajph_mean &lt;- apply(ajph[, 3:11], 2, mean)
-ajpm_mean &lt;- apply(ajpm[, 3:11], 2, mean)
-pm_mean &lt;- apply(pm[, 3:11], 2, mean)
+ajph_mean &lt;- apply(ajph[, 3:13], 2, mean)
+ajpm_mean &lt;- apply(ajpm[, 3:13], 2, mean)
+pm_mean &lt;- apply(pm[, 3:13], 2, mean)
 
 get_se_p &lt;- function(p, n, n_pop = 0) {
     if (n == 0) {
@@ -1770,7 +1792,7 @@ get_se_p &lt;- function(p, n, n_pop = 0) {
     if (n_pop == 0) {
         return(sqrt(p * (1 - p) / (n - 1)))
     } else {
-        return(sqrt((1 + n / n_pop) * p * (1 - p) / (n - 1)))
+        return(sqrt((1 - n / n_pop) * p * (1 - p) / (n - 1)))
     }
 }
 mean_matrix &lt;- cbind(ajph_mean, ajpm_mean, pm_mean)
@@ -1783,31 +1805,31 @@ se_matrix &lt;- cbind(
     get_se_p(ajpm_mean, 38, 103)^2,
     get_se_p(pm_mean, 60, 164)^2
 )</code></pre>
-<pre><code>## Warning in p == 0 || p == 1: &#39;length(x) = 9 &gt; 1&#39; in coercion to &#39;logical(1)&#39;
+<pre><code>## Warning in p == 0 || p == 1: &#39;length(x) = 11 &gt; 1&#39; in coercion to &#39;logical(1)&#39;
 
-## Warning in p == 0 || p == 1: &#39;length(x) = 9 &gt; 1&#39; in coercion to &#39;logical(1)&#39;
+## Warning in p == 0 || p == 1: &#39;length(x) = 11 &gt; 1&#39; in coercion to &#39;logical(1)&#39;
 
-## Warning in p == 0 || p == 1: &#39;length(x) = 9 &gt; 1&#39; in coercion to &#39;logical(1)&#39;
+## Warning in p == 0 || p == 1: &#39;length(x) = 11 &gt; 1&#39; in coercion to &#39;logical(1)&#39;
 
-## Warning in p == 0 || p == 1: &#39;length(x) = 9 &gt; 1&#39; in coercion to &#39;logical(1)&#39;
+## Warning in p == 0 || p == 1: &#39;length(x) = 11 &gt; 1&#39; in coercion to &#39;logical(1)&#39;
 
-## Warning in p == 0 || p == 1: &#39;length(x) = 9 &gt; 1&#39; in coercion to &#39;logical(1)&#39;
+## Warning in p == 0 || p == 1: &#39;length(x) = 11 &gt; 1&#39; in coercion to &#39;logical(1)&#39;
 
-## Warning in p == 0 || p == 1: &#39;length(x) = 9 &gt; 1&#39; in coercion to &#39;logical(1)&#39;</code></pre>
+## Warning in p == 0 || p == 1: &#39;length(x) = 11 &gt; 1&#39; in coercion to &#39;logical(1)&#39;</code></pre>
 <pre class="r"><code>se_weight_matrix &lt;- 1 / weight^2 * se_matrix
 percentage_se &lt;- sqrt(apply(se_weight_matrix, 1, sum))
 
-needed_percentage &lt;- c(&quot;ConfInt&quot;, &quot;HypTest&quot;, &quot;ci_hyp_both&quot;, &quot;ci_hyp_neither&quot;)
+needed_percentage &lt;- c(&quot;ci_only&quot;, &quot;hyp_only&quot;, &quot;ci_hyp_both&quot;, &quot;ci_hyp_neither&quot;)
 print(paste(&quot;percentage of each item:&quot;))</code></pre>
 <pre><code>## [1] &quot;percentage of each item:&quot;</code></pre>
 <pre class="r"><code>print(percentage[needed_percentage])</code></pre>
-<pre><code>##        ConfInt        HypTest    ci_hyp_both ci_hyp_neither 
-##     0.74403081     0.90444862     0.64576380     0.07105263</code></pre>
+<pre><code>##        ci_only       hyp_only    ci_hyp_both ci_hyp_neither 
+##     0.09759635     0.28081509     0.64065520     0.07232979</code></pre>
 <pre class="r"><code>print(paste(&quot;standard error of each item:&quot;))</code></pre>
 <pre><code>## [1] &quot;standard error of each item:&quot;</code></pre>
 <pre class="r"><code>print(percentage_se[needed_percentage])</code></pre>
-<pre><code>##        ConfInt        HypTest    ci_hyp_both ci_hyp_neither 
-##     0.04544303     0.03568379     0.04669863     0.02443849</code></pre>
+<pre><code>##        ci_only       hyp_only    ci_hyp_both ci_hyp_neither 
+##     0.01948951     0.02951906     0.03174408     0.01701208</code></pre>
 <pre class="r"><code>get_ci_str &lt;- function(p, se, alpha = 0.05) {
     z &lt;- qnorm(1 - alpha / 2)
     lower &lt;- p - z * se
@@ -1822,8 +1844,10 @@ print(paste(
     percentage[needed_percentage],
     percentage_se[needed_percentage]
 ))</code></pre>
-<pre><code>## [1] &quot;0.654964101213481, 0.833097516244798&quot; &quot;0.834509687556521, 0.974387555551248&quot;
-## [3] &quot;0.554236176269048, 0.737291423217474&quot; &quot;0.023154061835055, 0.11895120132284&quot;</code></pre>
+<pre><code>## [1] &quot;0.0593976194810038, 0.135795086413498&quot;
+## [2] &quot;0.222958791632194, 0.338671396791743&quot; 
+## [3] &quot;0.57843794710554, 0.702872450603153&quot;  
+## [4] &quot;0.0389867267523651, 0.105672844268486&quot;</code></pre>
 </div>
 <div id="d-1" class="section level3">
 <h3>d</h3>
@@ -1839,30 +1863,30 @@ print(paste(&quot;weighted mean of number of authors:&quot;, weighted_author_mea
     get_se(60, var(pm$NumAuthors), 164)
 )^2) / sum(journal_pop)^2
 print(paste(&quot;standard error of weighted mean of number of authors:&quot;, author_se))</code></pre>
-<pre><code>## [1] &quot;standard error of weighted mean of number of authors: 0.0579985248969631&quot;</code></pre>
+<pre><code>## [1] &quot;standard error of weighted mean of number of authors: 0.0270781952868627&quot;</code></pre>
 <pre class="r"><code>print(paste(
     &quot;95% confidence interval of weighted mean of number of authors:&quot;,
     get_ci_str(weighted_author_mean, author_se)
 ))</code></pre>
-<pre><code>## [1] &quot;95% confidence interval of weighted mean of number of authors: 5.9923125988676, 6.21966263877659&quot;</code></pre>
+<pre><code>## [1] &quot;95% confidence interval of weighted mean of number of authors: 6.0529153312935, 6.15905990635069&quot;</code></pre>
 </div>
 <div id="e-1" class="section level3">
 <h3>e</h3>
 <pre class="r"><code>needed_percentage &lt;- &quot;sel_assn_neither&quot;
 print(paste(&quot;percentage of each item:&quot;, percentage[needed_percentage]))</code></pre>
-<pre><code>## [1] &quot;percentage of each item: 0.669383825417202&quot;</code></pre>
+<pre><code>## [1] &quot;percentage of each item: 0.666861707904618&quot;</code></pre>
 <pre class="r"><code>print(paste(&quot;standard error of each item:&quot;, percentage_se[needed_percentage]))</code></pre>
-<pre><code>## [1] &quot;standard error of each item: 0.0485784643269969&quot;</code></pre>
+<pre><code>## [1] &quot;standard error of each item: 0.0327393964526763&quot;</code></pre>
 <pre class="r"><code>print(paste(
     &quot;95% confidence interval of each item:&quot;,
     get_ci_str(percentage[needed_percentage], percentage_se[needed_percentage])
 ))</code></pre>
-<pre><code>## [1] &quot;95% confidence interval of each item: 0.574171784912024, 0.764595865922379&quot;</code></pre>
+<pre><code>## [1] &quot;95% confidence interval of each item: 0.602693669981794, 0.731029745827442&quot;</code></pre>
 <pre class="r"><code>print(paste(
     &quot;total number of articles of each item given percentage:&quot;,
     round(percentage[needed_percentage] * sum(journal_pop))
 ))</code></pre>
-<pre><code>## [1] &quot;total number of articles of each item given percentage: 366&quot;</code></pre>
+<pre><code>## [1] &quot;total number of articles of each item given percentage: 365&quot;</code></pre>
 <pre class="r"><code>print(paste(
     &quot;95% confidence interval of total number of articles
     of each item given percentage:&quot;,
@@ -1871,7 +1895,7 @@ print(paste(&quot;percentage of each item:&quot;, percentage[needed_percentage])
         percentage_se[needed_percentage] * sum(journal_pop)
     )
 ))</code></pre>
-<pre><code>## [1] &quot;95% confidence interval of total number of articles\n    of each item given percentage: 314.071966346877, 418.233938659541&quot;</code></pre>
+<pre><code>## [1] &quot;95% confidence interval of total number of articles\n    of each item given percentage: 329.673437480042, 399.873270967611&quot;</code></pre>
 </div>
 </div>
 <div id="section-3" class="section level2">
@@ -1942,16 +1966,21 @@ print(u1)</code></pre>
 unique_radon &lt;- radon[!duplicated(radon$countyname), ]
 weight &lt;- unique_radon$popsize / unique_radon$sampsize
 print(weight)</code></pre>
-<pre><code>##  [1] 1350.00000 1261.40351 2750.00000 1642.85714 2375.00000  966.66667 1328.57143 2550.00000  954.54545
-## [10] 2350.00000 1680.00000 1120.00000 1666.66667 1146.66667  775.00000  900.00000 1300.00000 1433.33333
-## [19] 1150.72464 1833.33333 1036.36364 1216.66667 3950.00000 1340.00000  973.33333 3298.31933 1066.66667
-## [28] 1140.00000 2250.00000 1383.33333  685.71429 1225.00000 3525.00000  766.66667  688.88889 1900.00000
-## [37]  440.00000  300.00000 1450.00000  725.00000  900.00000 1600.00000  500.00000 1212.50000  853.84615
-## [46] 1540.00000 2400.00000 1030.00000 1064.28571 3900.00000 2375.00000 2600.00000 1100.00000 1388.46154
-## [55] 1809.09091 1425.00000 1250.00000 1025.00000 3125.00000 2300.00000 4307.14286 1340.00000 2466.66667
-## [64] 1445.45455 1266.66667  335.71429   66.39344 1178.57143 1233.33333 1375.00000 1333.33333 1100.00000
-## [73] 1850.00000 1175.00000 2350.00000  340.00000 1057.14286 1000.00000 1725.00000  848.00000 1566.66667
-## [82] 2800.00000 1238.46154 1542.85714 1533.33333</code></pre>
+<pre><code>##  [1] 1350.00000 1261.40351 2750.00000 1642.85714 2375.00000  966.66667
+##  [7] 1328.57143 2550.00000  954.54545 2350.00000 1680.00000 1120.00000
+## [13] 1666.66667 1146.66667  775.00000  900.00000 1300.00000 1433.33333
+## [19] 1150.72464 1833.33333 1036.36364 1216.66667 3950.00000 1340.00000
+## [25]  973.33333 3298.31933 1066.66667 1140.00000 2250.00000 1383.33333
+## [31]  685.71429 1225.00000 3525.00000  766.66667  688.88889 1900.00000
+## [37]  440.00000  300.00000 1450.00000  725.00000  900.00000 1600.00000
+## [43]  500.00000 1212.50000  853.84615 1540.00000 2400.00000 1030.00000
+## [49] 1064.28571 3900.00000 2375.00000 2600.00000 1100.00000 1388.46154
+## [55] 1809.09091 1425.00000 1250.00000 1025.00000 3125.00000 2300.00000
+## [61] 4307.14286 1340.00000 2466.66667 1445.45455 1266.66667  335.71429
+## [67]   66.39344 1178.57143 1233.33333 1375.00000 1333.33333 1100.00000
+## [73] 1850.00000 1175.00000 2350.00000  340.00000 1057.14286 1000.00000
+## [79] 1725.00000  848.00000 1566.66667 2800.00000 1238.46154 1542.85714
+## [85] 1533.33333</code></pre>
 </div>
 <div id="c-4" class="section level3">
 <h3>c</h3>
@@ -1981,20 +2010,20 @@ y_str_se &lt;- sqrt(sum(1 / weight^2 * se_h^2))
 print(paste(&quot;y_str:&quot;, y_str))</code></pre>
 <pre><code>## [1] &quot;y_str: 0.426129501525577&quot;</code></pre>
 <pre class="r"><code>print(paste(&quot;y_str_se:&quot;, y_str_se))</code></pre>
-<pre><code>## [1] &quot;y_str_se: 0.019532841114275&quot;</code></pre>
+<pre><code>## [1] &quot;y_str_se: 0.0194773447597766&quot;</code></pre>
 <pre class="r"><code>print(paste(&quot;95% confidence interval of y_str:&quot;, get_ci_str(y_str, y_str_se)))</code></pre>
-<pre><code>## [1] &quot;95% confidence interval of y_str: 0.387845836425855, 0.464413166625299&quot;</code></pre>
+<pre><code>## [1] &quot;95% confidence interval of y_str: 0.387954607281945, 0.464304395769209&quot;</code></pre>
 <pre class="r"><code>y_log_str &lt;- sum(1 / weight * y_log_h)
 y_log_str_se &lt;- sqrt(sum(1 / weight^2 * se_log_h^2))
 print(paste(&quot;y_log_str:&quot;, y_log_str))</code></pre>
 <pre><code>## [1] &quot;y_log_str: 0.106584753488187&quot;</code></pre>
 <pre class="r"><code>print(paste(&quot;y_log_str_se:&quot;, y_log_str_se))</code></pre>
-<pre><code>## [1] &quot;y_log_str_se: 0.00320381696766147&quot;</code></pre>
+<pre><code>## [1] &quot;y_log_str_se: 0.0031933631095221&quot;</code></pre>
 <pre class="r"><code>print(paste(
     &quot;95% confidence interval of y_log_str:&quot;,
     get_ci_str(y_log_str, y_log_str_se)
 ))</code></pre>
-<pre><code>## [1] &quot;95% confidence interval of y_log_str: 0.100305387618512, 0.112864119357861&quot;</code></pre>
+<pre><code>## [1] &quot;95% confidence interval of y_log_str: 0.100325876803965, 0.112843630172409&quot;</code></pre>
 </div>
 <div id="d-2" class="section level3">
 <h3>d</h3>
@@ -2014,9 +2043,9 @@ p_str_se &lt;- sqrt(sum(1 / weight^2 * se_h^2))
 print(paste(&quot;p_str:&quot;, p_str))</code></pre>
 <pre><code>## [1] &quot;p_str: 0.0374878589744666&quot;</code></pre>
 <pre class="r"><code>print(paste(&quot;p_str_se:&quot;, p_str_se))</code></pre>
-<pre><code>## [1] &quot;p_str_se: 0.00190365140274833&quot;</code></pre>
+<pre><code>## [1] &quot;p_str_se: 0.00189804582869492&quot;</code></pre>
 <pre class="r"><code>print(paste(&quot;95% confidence interval of p_str:&quot;, get_ci_str(p_str, p_str_se)))</code></pre>
-<pre><code>## [1] &quot;95% confidence interval of p_str: 0.0337567707859607, 0.0412189471629725&quot;</code></pre>
+<pre><code>## [1] &quot;95% confidence interval of p_str: 0.0337677575092181, 0.0412079604397151&quot;</code></pre>
 </div>
 </div>
 <div id="section-6" class="section level2">
@@ -2056,9 +2085,9 @@ t_str_se &lt;- sqrt(sum(n_h_pop^2 * se_h^2))
 print(paste(&quot;t_str:&quot;, t_str))</code></pre>
 <pre><code>## [1] &quot;t_str: 1114727883442.98&quot;</code></pre>
 <pre class="r"><code>print(paste(&quot;t_str_se:&quot;, t_str_se))</code></pre>
-<pre><code>## [1] &quot;t_str_se: 6493186647.21804&quot;</code></pre>
+<pre><code>## [1] &quot;t_str_se: 6491502011.79138&quot;</code></pre>
 <pre class="r"><code>print(paste(&quot;95% confidence interval of t_str:&quot;, get_ci_str(t_str, t_str_se)))</code></pre>
-<pre><code>## [1] &quot;95% confidence interval of t_str: 1102001471469.53, 1127454295416.42&quot;</code></pre>
+<pre><code>## [1] &quot;95% confidence interval of t_str: 1102004773294.3, 1127450993591.66&quot;</code></pre>
 </div>
 <div id="c-5" class="section level3">
 <h3>c</h3>
@@ -2098,15 +2127,15 @@ for (i in 1:5) {
     print(paste(&quot;95% confidence interval of trucktype&quot;, i, &quot;:&quot;, get_ci_str(trucktype_estimate[i, 1], trucktype_estimate[i, 2])))
 }</code></pre>
 <pre><code>## [1] &quot;trucktype 1 mile: 428294502081.533&quot;
-## [1] &quot;95% confidence interval of trucktype 1 : 419064615514.105, 437524388648.961&quot;
+## [1] &quot;95% confidence interval of trucktype 1 : 419066075395.953, 437522928767.113&quot;
 ## [1] &quot;trucktype 2 mile: 541099850892.526&quot;
-## [1] &quot;95% confidence interval of trucktype 2 : 532459552725.685, 549740149059.367&quot;
+## [1] &quot;95% confidence interval of trucktype 2 : 532460941180.784, 549738760604.268&quot;
 ## [1] &quot;trucktype 3 mile: 41279084489.5836&quot;
-## [1] &quot;95% confidence interval of trucktype 3 : 40501465740.6103, 42056703238.5569&quot;
+## [1] &quot;95% confidence interval of trucktype 3 : 40505035569.0027, 42053133410.1645&quot;
 ## [1] &quot;trucktype 4 mile: 31752656136.6691&quot;
-## [1] &quot;95% confidence interval of trucktype 4 : 31066663354.719, 32438648918.6192&quot;
+## [1] &quot;95% confidence interval of trucktype 4 : 31073376550.8071, 32431935722.5311&quot;
 ## [1] &quot;trucktype 5 mile: 72301789842.6664&quot;
-## [1] &quot;95% confidence interval of trucktype 5 : 71281629932.3252, 73321949753.0076&quot;</code></pre>
+## [1] &quot;95% confidence interval of trucktype 5 : 71290681901.1136, 73312897784.2192&quot;</code></pre>
 </div>
 <div id="d-3" class="section level3">
 <h3>d</h3>
@@ -2130,9 +2159,9 @@ t_str_se &lt;- n_pop * p_str_se
 print(paste(&quot;t_str:&quot;, t_str))</code></pre>
 <pre><code>## [1] &quot;t_str: 5415208.731&quot;</code></pre>
 <pre class="r"><code>print(paste(&quot;t_str_se:&quot;, t_str_se))</code></pre>
-<pre><code>## [1] &quot;t_str_se: 65356.2836173025&quot;</code></pre>
+<pre><code>## [1] &quot;t_str_se: 65334.6409275265&quot;</code></pre>
 <pre class="r"><code>print(paste(&quot;95% confidence interval of t_str:&quot;, get_ci_str(t_str, t_str_se)))</code></pre>
-<pre><code>## [1] &quot;95% confidence interval of t_str: 5287112.7689467, 5543304.6930533&quot;</code></pre>
+<pre><code>## [1] &quot;95% confidence interval of t_str: 5287155.18783919, 5543262.27416081&quot;</code></pre>
 </div>
 </div>
 
